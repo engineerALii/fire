@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معرض الفنون الزجاجي</title>
+    <title>TAOS Gallery</title>
     
     <!-- الخطوط -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,6 +31,14 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        /* نافذة المودال الزجاجية */
+        .glass-modal {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* كرات الخلفية المتحركة */
@@ -78,6 +86,21 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #475569; 
         }
+        
+        /* تأثيرات الأزرار */
+        .admin-btn {
+            transform: scale(0.9);
+            transition: all 0.2s;
+        }
+        .admin-btn:hover {
+            transform: scale(1);
+        }
+
+        /* تخصيص Select */
+        select option {
+            background-color: #1e293b;
+            color: white;
+        }
     </style>
 </head>
 <body class="min-h-screen relative">
@@ -87,16 +110,86 @@
     <div class="orb w-[40vw] h-[40vw] bg-blue-600/20 bottom-[-10%] right-[-10%] animation-delay-2000"></div>
     <div class="orb w-[30vw] h-[30vw] bg-pink-600/20 top-[40%] left-[40%] animation-delay-4000"></div>
 
+    <!-- نافذة كلمة المرور (Modal) -->
+    <div id="password-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="glass-modal p-8 rounded-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-300 shadow-2xl relative">
+            <button id="close-password-modal" class="absolute top-4 left-4 text-gray-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/30">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-blue-400"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">منطقة المشرف</h2>
+                <p class="text-gray-400 text-sm">الرجاء إدخال كلمة المرور للوصول إلى لوحة التحكم</p>
+            </div>
+
+            <form id="password-form" class="space-y-4">
+                <div class="relative">
+                    <input type="password" id="admin-password" placeholder="كلمة المرور..." 
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 focus:bg-white/10 transition-all text-center tracking-widest">
+                </div>
+                <div id="password-error" class="text-red-400 text-xs text-center h-4 hidden">كلمة المرور غير صحيحة</div>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 transform hover:-translate-y-0.5">
+                    تأكيد الدخول
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة إدخال تفاصيل الصورة (Modal) -->
+    <div id="title-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="glass-modal p-8 rounded-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-300 shadow-2xl relative">
+            <button id="close-title-modal" class="absolute top-4 left-4 text-gray-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-pink-500/30">
+                    <i data-lucide="image-plus" class="w-8 h-8 text-pink-400"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">تفاصيل العمل الفني</h2>
+                <p class="text-gray-400 text-sm">أضف عنواناً وتصنيفاً لصورتك</p>
+            </div>
+
+            <form id="title-form" class="space-y-4">
+                <div class="space-y-2">
+                    <label class="text-sm text-gray-300">عنوان الصورة</label>
+                    <input type="text" id="image-title-input" placeholder="مثال: مخطوطة الكوفة" 
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500/50 focus:bg-white/10 transition-all text-right" required>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="text-sm text-gray-300">نوع الصورة (التصنيف)</label>
+                    <div class="relative">
+                        <select id="image-category-input" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500/50 focus:bg-white/10 transition-all appearance-none cursor-pointer">
+                            <option value="كاليغرافي">كاليغرافي</option>
+                            <option value="بورتريه">بورتريه</option>
+                            <option value="خرائط">خرائط</option>
+                            <option value="المجتمع">المجتمع</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-pink-500/20 transform hover:-translate-y-0.5 mt-4">
+                    نشر العمل
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- القائمة العلوية -->
     <nav class="fixed top-0 left-0 right-0 z-50 px-4 py-4">
         <div class="glass-card max-w-7xl mx-auto px-6 py-3 flex justify-between items-center rounded-full">
             <!-- الشعار والحالة -->
             <div class="flex items-center gap-4">
-                <div class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300">
-                    ألبوم فني
+                <div class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 font-sans tracking-wide">
+                    TAOS
                 </div>
-                <!-- حالة الاتصال -->
-                <div id="connection-status" class="hidden md:flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                <!-- حالة الاتصال (مخفي افتراضياً) -->
+                <div id="connection-status" class="hidden items-center gap-1 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
                     <i data-lucide="wifi-off" class="w-3 h-3 text-amber-400"></i>
                     <span class="text-[10px] text-amber-200 font-bold">جاري الاتصال...</span>
                 </div>
@@ -106,20 +199,25 @@
             <div class="hidden md:flex items-center gap-8">
                 <a href="#" class="text-gray-200 hover:text-white font-medium transition-colors">الرئيسية</a>
                 <a href="#" class="text-gray-200 hover:text-white font-medium transition-colors">المعرض</a>
-                <a href="#" class="text-gray-200 hover:text-white font-medium transition-colors">فنانون</a>
+                <!-- زر المشرف -->
+                <button id="admin-toggle-btn" class="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-white/5" title="دخول المشرف">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                </button>
             </div>
 
             <!-- الإجراءات -->
             <div class="flex items-center gap-4">
                 <input type="file" id="file-upload" class="hidden" accept="image/*">
                 
-                <button id="upload-btn" class="flex items-center gap-2 bg-pink-500/20 hover:bg-pink-500/40 text-pink-100 px-5 py-2 rounded-full text-sm font-bold transition-all border border-pink-500/30">
+                <!-- زر الرفع (يظهر فقط للمشرف) -->
+                <button id="upload-btn" class="hidden flex items-center gap-2 bg-pink-500/20 hover:bg-pink-500/40 text-pink-100 px-5 py-2 rounded-full text-sm font-bold transition-all border border-pink-500/30">
                     <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span id="upload-text">إضافة عمل</span>
+                    <span id="upload-text">نشر صورة</span>
                 </button>
 
+                <!-- حقل البحث -->
                 <div class="hidden md:block relative group">
-                    <input type="text" placeholder="بحث..." class="bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-sm text-white focus:outline-none focus:bg-white/10 focus:border-white/30 transition-all w-32 group-hover:w-48 placeholder-gray-400">
+                    <input type="text" id="search-input" placeholder="بحث..." class="bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-sm text-white focus:outline-none focus:bg-white/10 focus:border-white/30 transition-all w-32 group-hover:w-48 placeholder-gray-400">
                     <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
                 </div>
             </div>
@@ -140,18 +238,31 @@
             </a>
         </div>
 
+        <!-- حالة المشرف -->
+        <div id="admin-badge" class="hidden text-center mb-4">
+            <span class="bg-red-500/20 text-red-200 border border-red-500/30 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                <i data-lucide="shield" class="w-3 h-3 inline-block ml-1"></i>
+                وضع المشرف مفعل
+            </span>
+        </div>
+
         <!-- الترويسة -->
         <div class="text-center mb-16">
-            <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-pink-200 to-white mb-6 drop-shadow-lg">
-                مجتمع الفن
+            <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-pink-200 to-white mb-6 drop-shadow-lg font-sans">
+                TAOS
             </h1>
-            <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                مساحة مشتركة لعرض إبداعات الخط العربي والبورتريه.
-                شارك أعمالك ليراها العالم.
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-8">
+                وجهتك الأولى لطلب اللوحات الفنية المصممة خصيصاً لك. نحول أفكارك إلى أعمال فنية ملموسة تضفي لمسة من الجمال والأناقة على مساحتك الخاصة.
             </p>
             
+            <!-- زر الطلب من الانستغرام -->
+            <a href="https://instagram.com/taos.iraq" target="_blank" class="inline-flex items-center gap-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-pink-500/30 transform hover:-translate-y-1 mb-10">
+                <i data-lucide="instagram" class="w-5 h-5"></i>
+                <span>اطلب لوحتك الآن</span>
+            </a>
+            
             <!-- التصنيفات -->
-            <div id="filters" class="flex flex-wrap justify-center gap-3 mt-10">
+            <div id="filters" class="flex flex-wrap justify-center gap-3 mt-4">
                 <!-- سيتم توليد الأزرار بواسطة JS -->
             </div>
         </div>
@@ -159,31 +270,31 @@
         <!-- حالة التحميل -->
         <div id="loading-indicator" class="hidden max-w-md mx-auto mb-8 bg-blue-500/20 border border-blue-500/50 rounded-xl p-4 flex items-center justify-center gap-3 text-blue-100 animate-pulse">
             <i data-lucide="loader" class="animate-spin"></i>
-            <span>جاري رفع تحفتك الفنية...</span>
+            <span>جاري معالجة ورفع الصورة (يرجى الانتظار)...</span>
         </div>
 
         <!-- شبكة الصور -->
-        <div id="gallery-grid" class="masonry-grid">
+        <div id="gallery-grid" class="masonry-grid min-h-[200px]">
             <!-- سيتم إضافة الصور هنا -->
         </div>
 
         <!-- رسالة فارغة -->
         <div id="empty-state" class="hidden text-center py-20 text-gray-400">
             <i data-lucide="image" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
-            <p class="text-xl">لا توجد منشورات في هذا التصنيف</p>
+            <p class="text-xl">لا توجد صور لعرضها حالياً</p>
         </div>
 
     </main>
 
     <footer class="text-center py-8 text-gray-500 text-sm border-t border-white/5 relative z-10 glass-card mx-4 rounded-t-2xl">
-        <p>© 2025 معرض الفنون الرقمية. جميع الحقوق محفوظة.</p>
+        <p>© 2025 TAOS Gallery. جميع الحقوق محفوظة.</p>
     </footer>
 
     <!-- Firebase Script Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // --- إعدادات Firebase ---
         const firebaseConfig = {
@@ -207,35 +318,174 @@
             dbPosts: [],
             localPosts: [],
             filter: 'الكل',
+            searchQuery: '', // إضافة خاصية البحث
             isUploading: false,
-            isConnected: false
+            isConnected: false,
+            isAdmin: false,
+            pendingFile: null
         };
 
         // --- البيانات الثابتة ---
-        const initialPostsData = [
-            { id: 'static-1', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.18_81fa7aac.jpg", title: "فن الخط العربي - شهد", category: "كاليغرافي", likes: 124, location: "النجف الأشرف", isStatic: true },
-            { id: 'static-2', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.19_8613f8c0.jpg", title: "جمالية الاسم - حسن", category: "كاليغرافي", likes: 98, location: "العراق", isStatic: true },
-            { id: 'static-3', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.18_a97bb9ce.jpg", title: "مخطوطة علي", category: "كاليغرافي", likes: 215, location: "بغداد", isStatic: true },
-            { id: 'static-4', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.19_a7e1a63b.jpg", title: "خريطة النجف الفنية", category: "خرائط", likes: 340, location: "النجف، حي الزهور", isStatic: true },
-            { id: 'static-5', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.18_d3b410b6.jpg", title: "محمد (ص)", category: "كاليغرافي", likes: 450, location: "كربلاء", isStatic: true },
-            { id: 'static-6', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.19_fbc44915.jpg", title: "الزهراء (ع)", category: "كاليغرافي", likes: 380, location: "النجف", isStatic: true },
-            { id: 'static-7', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.18_b3e6f3bd.jpg", title: "مهدي (عج)", category: "كاليغرافي", likes: 290, location: "سامراء", isStatic: true },
-            { id: 'static-8', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.19_d7e9624a.jpg", title: "بورتريه شخصية دينية", category: "بورتريه", likes: 150, location: "النجف", isStatic: true },
-            { id: 'static-9', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.19_e231ffc8.jpg", title: "وقار العلماء", category: "بورتريه", likes: 185, location: "النجف", isStatic: true },
-            { id: 'static-10', image: "صورة واتساب بتاريخ 2025-12-04 في 23.43.19_ba058cfc.jpg", title: "شخصية دينية", category: "بورتريه", likes: 130, location: "النجف", isStatic: true }
-        ];
+        const initialPostsData = [];
 
         // --- عناصر DOM ---
         const galleryGrid = document.getElementById('gallery-grid');
         const filtersContainer = document.getElementById('filters');
         const uploadBtn = document.getElementById('upload-btn');
         const fileInput = document.getElementById('file-upload');
+        const searchInput = document.getElementById('search-input'); // عنصر البحث
         const loadingIndicator = document.getElementById('loading-indicator');
         const emptyState = document.getElementById('empty-state');
         const statusDiv = document.getElementById('connection-status');
         const errorBanner = document.getElementById('error-banner');
         const errorText = document.getElementById('error-text');
         const errorActionLink = document.getElementById('error-action-link');
+        const adminToggleBtn = document.getElementById('admin-toggle-btn');
+        const adminBadge = document.getElementById('admin-badge');
+        
+        // عناصر مودال كلمة المرور
+        const passwordModal = document.getElementById('password-modal');
+        const passwordForm = document.getElementById('password-form');
+        const passwordInput = document.getElementById('admin-password');
+        const passwordError = document.getElementById('password-error');
+        const closePasswordModalBtn = document.getElementById('close-password-modal');
+
+        // عناصر مودال العنوان والتصنيف
+        const titleModal = document.getElementById('title-modal');
+        const titleForm = document.getElementById('title-form');
+        const titleInput = document.getElementById('image-title-input');
+        const categoryInput = document.getElementById('image-category-input');
+        const closeTitleModalBtn = document.getElementById('close-title-modal');
+
+        // --- تفعيل البحث ---
+        if(searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value.toLowerCase();
+                renderGallery();
+            });
+        }
+
+        // --- إدارة المشاركة (Share) ---
+        window.handleShare = async (title, category) => {
+            const shareData = {
+                title: 'TAOS Gallery - ' + title,
+                text: `شاهد هذا العمل الفني الرائع "${title}" في قسم ${category} على معرض TAOS`,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    console.log('Error sharing:', err);
+                }
+            } else {
+                try {
+                    await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+                    alert(`تم نسخ رابط المشاركة للعمل: "${title}"`);
+                } catch (err) {
+                    alert('المتصفح لا يدعم المشاركة التلقائية.');
+                }
+            }
+        };
+
+        // --- دوال مساعدة للنوافذ المنبثقة ---
+        const openModal = (modalElement) => {
+            modalElement.classList.remove('hidden');
+            setTimeout(() => {
+                modalElement.classList.remove('opacity-0');
+                const content = modalElement.querySelector('div');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+            const input = modalElement.querySelector('input');
+            if(input) {
+                input.value = '';
+                input.focus();
+            }
+        };
+
+        const closeModal = (modalElement) => {
+            modalElement.classList.add('opacity-0');
+            const content = modalElement.querySelector('div');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modalElement.classList.add('hidden');
+            }, 300);
+        };
+
+        // --- إدارة المشرف ---
+        const handleAdminToggle = () => {
+            if (state.isAdmin) {
+                state.isAdmin = false;
+                alert("تم الخروج من وضع المشرف");
+                updateAdminUI();
+                renderGallery();
+            } else {
+                passwordError.classList.add('hidden'); // إخفاء خطأ سابق
+                openModal(passwordModal);
+            }
+        };
+
+        passwordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const password = passwordInput.value;
+            
+            if (password === "alikuka2002alikuka") {
+                state.isAdmin = true;
+                updateAdminUI();
+                renderGallery();
+                closeModal(passwordModal);
+            } else {
+                passwordError.classList.remove('hidden');
+                passwordInput.classList.add('border-red-500');
+                passwordInput.classList.add('animate-pulse');
+                setTimeout(() => passwordInput.classList.remove('animate-pulse'), 500);
+            }
+        });
+
+        closePasswordModalBtn.addEventListener('click', () => closeModal(passwordModal));
+        
+        if(adminToggleBtn) {
+            adminToggleBtn.addEventListener('click', handleAdminToggle);
+        }
+
+        // --- إدارة إدخال العنوان والتصنيف ---
+        closeTitleModalBtn.addEventListener('click', () => {
+            closeModal(titleModal);
+            state.pendingFile = null; // إلغاء الرفع
+            fileInput.value = ''; // تصفية الإدخال
+        });
+
+        titleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = titleInput.value || "بدون عنوان";
+            const category = categoryInput.value || "المجتمع"; // الحصول على التصنيف
+            closeModal(titleModal);
+            
+            if (state.pendingFile) {
+                await processUpload(state.pendingFile, title, category);
+                state.pendingFile = null;
+                fileInput.value = '';
+            }
+        });
+
+        function updateAdminUI() {
+            updateStatusUI(); // تحديث حالة الاتصال أيضاً
+            if (state.isAdmin) {
+                uploadBtn.classList.remove('hidden');
+                adminBadge.classList.remove('hidden');
+                adminToggleBtn.innerHTML = '<i data-lucide="unlock" class="w-4 h-4 text-green-400"></i>';
+                adminToggleBtn.classList.add('bg-white/10');
+            } else {
+                uploadBtn.classList.add('hidden');
+                adminBadge.classList.add('hidden');
+                adminToggleBtn.innerHTML = '<i data-lucide="lock" class="w-4 h-4"></i>';
+                adminToggleBtn.classList.remove('bg-white/10');
+            }
+            lucide.createIcons();
+        }
 
         // --- تهيئة المصادقة ---
         async function initAuth() {
@@ -265,18 +515,13 @@
                     ...doc.data(),
                     isStatic: false
                 }));
-                // ترتيب حسب التاريخ
                 fetchedPosts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 state.dbPosts = fetchedPosts;
                 
-                // إذا نجح الاتصال، نخفي أي رسائل خطأ سابقة
                 errorBanner.classList.add('hidden');
-                
                 renderGallery();
             }, (error) => {
                 console.log("Firestore error:", error);
-                
-                // كشف الأخطاء الشائعة
                 if (error.message.includes("does not exist") || error.code === 'not-found') {
                     showError("قاعدة البيانات غير موجودة! أنشئها في Firebase Console", "https://console.firebase.google.com/project/neew-aec2b/firestore");
                 } else if (error.code === 'permission-denied') {
@@ -295,8 +540,8 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800;
-                        const MAX_HEIGHT = 800;
+                        const MAX_WIDTH = 700;
+                        const MAX_HEIGHT = 700;
                         let width = img.width;
                         let height = img.height;
 
@@ -316,7 +561,7 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                        resolve(canvas.toDataURL('image/jpeg', 0.5));
                     };
                 };
             });
@@ -327,10 +572,17 @@
             if (!state.isUploading) fileInput.click();
         });
 
-        fileInput.addEventListener('change', async (e) => {
+        fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
+            // حفظ الملف مؤقتاً وفتح نافذة العنوان
+            state.pendingFile = file;
+            openModal(titleModal);
+        });
+
+        // دالة المعالجة والرفع الفعلية
+        async function processUpload(file, title, category) {
             state.isUploading = true;
             updateUploadUI();
 
@@ -338,10 +590,10 @@
                 const compressedImage = await compressImage(file);
                 const newPost = {
                     image: compressedImage,
-                    title: "مشاركة جديدة",
-                    category: "المجتمع",
+                    title: title,
+                    category: category,
                     likes: 0,
-                    location: state.isConnected ? "من الويب" : "جهازي (محلي)",
+                    location: "من العراق", // تغيير الموقع الافتراضي
                     createdAt: Date.now(),
                     userId: state.user ? state.user.uid : 'offline-user',
                     isStatic: false
@@ -353,31 +605,36 @@
                     } catch (err) {
                         console.error("Firestore write failed:", err);
                         
-                        // تحقق من خطأ "قاعدة البيانات غير موجودة" أثناء الرفع
+                        let errorMsg = "فشل الرفع للسيرفر. تم الحفظ محلياً.";
+                        
                         if (err.message.includes("does not exist") || err.code === 'not-found') {
+                            errorMsg = "قاعدة البيانات غير موجودة. تم الحفظ محلياً.";
                             showError("قاعدة البيانات مفقودة! أنشئها الآن.", "https://console.firebase.google.com/project/neew-aec2b/firestore");
                         } else if (err.code === 'permission-denied') {
+                             errorMsg = "لا توجد صلاحيات. تم الحفظ محلياً.";
                              showError("مشكلة في الصلاحيات (Rules).", "https://console.firebase.google.com/project/neew-aec2b/firestore/rules");
+                        } else if (err.code === 'resource-exhausted' || err.message.includes("larger than")) {
+                            errorMsg = "الصورة كبيرة جداً لقاعدة البيانات. تم الحفظ محلياً.";
                         }
-
-                        // إضافة محلية كبديل
+                        
+                        alert(errorMsg);
                         state.localPosts.unshift({...newPost, id: `local-${Date.now()}`});
                     }
                 } else {
                     state.localPosts.unshift({...newPost, id: `local-${Date.now()}`});
+                    alert("تم الحفظ محلياً (غير متصل)");
                 }
                 
-                renderGallery(); // تحديث فوري للعرض المحلي
+                renderGallery();
 
             } catch (error) {
                 console.error("Error processing image:", error);
                 alert("حدث خطأ أثناء معالجة الصورة");
             } finally {
                 state.isUploading = false;
-                fileInput.value = ''; // إعادة تعيين
                 updateUploadUI();
             }
-        });
+        }
 
         // --- الإعجابات ---
         window.handleLike = async (postId) => {
@@ -397,12 +654,72 @@
             }
         };
 
+        // --- الحذف (للمشرف فقط) ---
+        window.deletePost = async (postId) => {
+            if (!confirm("هل أنت متأكد من حذف هذه الصورة نهائياً؟")) return;
+            
+            if (String(postId).startsWith('local-') || String(postId).startsWith('static-')) {
+                 if(String(postId).startsWith('static-')) {
+                     alert("لا يمكن حذف الصور الأساسية الثابتة.");
+                     return;
+                 }
+                 state.localPosts = state.localPosts.filter(p => p.id !== postId);
+                 renderGallery();
+                 return;
+            }
+
+            try {
+                await deleteDoc(doc(db, 'gallery_posts', postId));
+            } catch (err) {
+                console.error("Delete failed:", err);
+                alert("فشل الحذف. تحقق من الصلاحيات.");
+            }
+        };
+
+        // --- التعديل (للمشرف فقط) ---
+        window.editPost = async (postId, currentTitle) => {
+            if (String(postId).startsWith('static-')) {
+                alert("لا يمكن تعديل الصور الأساسية.");
+                return;
+            }
+
+            const newTitle = prompt("أدخل العنوان الجديد:", currentTitle);
+            if (newTitle === null || newTitle === currentTitle) return;
+
+            if (String(postId).startsWith('local-')) {
+                const post = state.localPosts.find(p => p.id === postId);
+                if (post) {
+                    post.title = newTitle;
+                    renderGallery();
+                }
+                return;
+            }
+
+            try {
+                const postRef = doc(db, 'gallery_posts', postId);
+                await updateDoc(postRef, {
+                    title: newTitle
+                });
+            } catch (err) {
+                console.error("Update failed:", err);
+                alert("فشل التعديل. تحقق من الصلاحيات.");
+            }
+        };
+
         // --- عرض المعرض ---
         function renderGallery() {
             const allPosts = [...state.localPosts, ...state.dbPosts, ...initialPostsData];
-            const filteredPosts = state.filter === 'الكل' 
-                ? allPosts 
-                : allPosts.filter(post => post.category === state.filter);
+            
+            // تطبيق الفلتر والبحث
+            const filteredPosts = allPosts.filter(post => {
+                const matchesCategory = state.filter === 'الكل' || post.category === state.filter;
+                // البحث في العنوان أو الموقع
+                const searchLower = state.searchQuery.toLowerCase();
+                const matchesSearch = post.title?.toLowerCase().includes(searchLower) || 
+                                      post.location?.toLowerCase().includes(searchLower);
+                
+                return matchesCategory && matchesSearch;
+            });
 
             galleryGrid.innerHTML = '';
 
@@ -412,9 +729,25 @@
                 emptyState.classList.add('hidden');
                 
                 filteredPosts.forEach(post => {
+                    // أزرار التحكم للمشرف
+                    let adminControls = '';
+                    if (state.isAdmin) {
+                        adminControls = `
+                            <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                <button onclick="editPost('${post.id}', '${post.title}')" class="admin-btn bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 shadow-lg" title="تعديل العنوان">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="deletePost('${post.id}')" class="admin-btn bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow-lg" title="حذف الصورة">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+
                     const card = document.createElement('div');
-                    card.className = 'glass-card rounded-2xl overflow-hidden masonry-item group hover:-translate-y-2 transition-transform duration-500';
+                    card.className = 'glass-card rounded-2xl overflow-hidden masonry-item group hover:-translate-y-2 transition-transform duration-500 relative';
                     card.innerHTML = `
+                        ${adminControls}
                         <div class="relative overflow-hidden">
                             <img 
                                 src="${post.image}" 
@@ -422,7 +755,7 @@
                                 class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110"
                                 onerror="this.src='https://placehold.co/600x800/2a2a2a/FFF?text=Image+Error'"
                             >
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 pointer-events-none">
                                 <p class="text-white text-sm font-medium translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                                     ${post.category}
                                 </p>
@@ -443,7 +776,7 @@
                                         <span class="text-sm font-medium">${post.likes}</span>
                                     </button>
                                 </div>
-                                <button class="text-gray-200 hover:text-white">
+                                <button onclick="handleShare('${post.title}', '${post.category}')" class="text-gray-200 hover:text-white transition-colors" title="مشاركة">
                                     <i data-lucide="share-2" class="w-5 h-5"></i>
                                 </button>
                             </div>
@@ -480,6 +813,16 @@
 
         // --- تحديثات واجهة المستخدم ---
         function updateStatusUI() {
+            // التحقق من حالة المشرف أولاً
+            if (!state.isAdmin) {
+                statusDiv.classList.add('hidden');
+                statusDiv.classList.remove('md:flex');
+                return;
+            }
+
+            // استعادة الظهور للمشرف (يظهر في الشاشات المتوسطة فما فوق)
+            statusDiv.classList.add('md:flex'); 
+            
             if (state.isConnected) {
                 statusDiv.classList.replace('bg-amber-500/10', 'bg-green-500/10');
                 statusDiv.classList.replace('border-amber-500/20', 'border-green-500/20');
@@ -506,7 +849,7 @@
             } else {
                 loadingIndicator.classList.add('hidden');
                 uploadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                document.getElementById('upload-text').innerText = 'إضافة عمل';
+                document.getElementById('upload-text').innerText = 'نشر صورة';
             }
         }
 
@@ -521,7 +864,6 @@
                 errorActionLink.classList.add('hidden');
             }
             
-            // لا نخفي الرسالة تلقائياً إذا كانت متعلقة بقاعدة البيانات لأنها تتطلب إجراء
             if (!msg.includes("قاعدة البيانات") && !msg.includes("صلاحيات")) {
                 setTimeout(() => {
                     errorBanner.classList.add('hidden');
@@ -533,6 +875,7 @@
         initAuth();
         renderFilters();
         renderGallery();
+        updateAdminUI(); 
         lucide.createIcons();
 
     </script>
